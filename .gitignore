@@ -1,1 +1,2 @@
-dpam.sif
+*.sif
+logs/*

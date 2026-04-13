@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.contrib.slim as slim
 
-from helper import *
+from .helper import *
 
 # FEATURE LOSS NETWORK
 def lossnet(input, keep_prob,n_layers=14, training=True, reuse=False, norm_type="SBN",
