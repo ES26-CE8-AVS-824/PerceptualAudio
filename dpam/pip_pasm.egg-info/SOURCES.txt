@@ -1,0 +1,6 @@
+__init__.py
+setup.py
+pip_pasm.egg-info/PKG-INFO
+pip_pasm.egg-info/SOURCES.txt
+pip_pasm.egg-info/dependency_links.txt
+pip_pasm.egg-info/top_level.txt
