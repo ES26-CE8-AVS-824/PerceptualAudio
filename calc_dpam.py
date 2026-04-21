@@ -14,9 +14,9 @@ DPAM is computed for:
 
 import sys
 from argparse import ArgumentParser
-from glob import glob
 from os.path import join
 from pathlib import Path
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
@@ -98,8 +98,8 @@ if __name__ == "__main__":
     # Build column accumulators
     # ------------------------------------------------------------------
 
-    dpam_raw_vs_adv: list[float] = []
-    dpam_per_purifier: dict[str, dict[str, list[float]]] = {
+    dpam_raw_vs_adv: List[float] = []
+    dpam_per_purifier: Dict[str, Dict[str, List[float]]] = {
         name: {"raw-vs-prf": [], "adv-vs-prf": []}
         for name in purifier_names
     }
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         wav_adversarial = dpam.load_audio(adversarial_path)
 
         # raw-vs-adv (purifier-independent)
-        dpam_raw_vs_adv.append(float(loss_fn.forward(wav_original, wav_adversarial)))
+        dpam_raw_vs_adv.append(float(loss_fn.forward(wav_original, wav_adversarial)[0]))
 
         # per-purifier pairs
         for name, pdir in zip(purifier_names, purifier_dirs):
@@ -127,10 +127,10 @@ if __name__ == "__main__":
             wav_purified = dpam.load_audio(purified_path)
 
             dpam_per_purifier[name]["raw-vs-prf"].append(
-                float(loss_fn.forward(wav_original, wav_purified))
+                float(loss_fn.forward(wav_original, wav_purified)[0])
             )
             dpam_per_purifier[name]["adv-vs-prf"].append(
-                float(loss_fn.forward(wav_adversarial, wav_purified))
+                float(loss_fn.forward(wav_adversarial, wav_purified)[0])
             )
 
     # ------------------------------------------------------------------
