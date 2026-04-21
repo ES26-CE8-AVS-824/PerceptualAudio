@@ -51,7 +51,7 @@ def featureloss(target, current, keep_prob ,loss_layers, n_layers=14, norm_type=
     
     for id in range(loss_layers):
         a=feat_current[id]-feat_target[id]
-        weights = tf.Variable(tf.random_normal([channels[id]]),
+        weights = tf.Variable(tf.random.normal([channels[id]]),
                       name="weights_%d" %id, trainable=True)
         a1=tf.transpose(a, [0, 1, 3, 2])
         result=tf.multiply(a1, weights[:,tf.newaxis])
@@ -92,7 +92,7 @@ def featureloss_batch(target, current, keep_prob,loss_layers, n_layers=14, norm_
     
     for id in range(loss_layers):
         a=feat_current[id]-feat_target[id]
-        weights = tf.Variable(tf.random_normal([channels[id]]),
+        weights = tf.Variable(tf.random.normal([channels[id]]),
                       name="weights_%d" %id, trainable=True)
         a1=tf.transpose(a, [0, 1, 3, 2])
         result=tf.multiply(a1, weights[:,tf.newaxis])

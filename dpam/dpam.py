@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 import numpy as np
 import tensorflow as tf
+import tensorflow.compat.v1 as tfcv1
 from dpam.network_model import *
 from dpam.helper import *
 import os
@@ -32,15 +33,15 @@ class DPAM():
         self.type = type
         
         modfolder= os.path.abspath(os.path.join(inspect.getfile(self.__init__), '..', 'pre-model/'+self.type+'_loss'))
-        tf.reset_default_graph()
+        tfcv1.reset_default_graph()
 
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tfcv1.variable_scope(tfcv1.get_variable_scope()):
 
-            input1_wav=tf.placeholder(tf.float32,shape=[None, None, None,1])
+            input1_wav=tfcv1.placeholder(tf.float32, shape=[None, None, None, 1])
             self.input1_wav = input1_wav
-            clean1_wav=tf.placeholder(tf.float32,shape=[None, None, None,1])
+            clean1_wav=tfcv1.placeholder(tf.float32, shape=[None, None, None, 1])
             self.clean1_wav = clean1_wav
-            keep_prob = tf.placeholder_with_default(1.0, shape=())
+            keep_prob = tfcv1.placeholder_with_default(1.0, shape=())
 
             if self.type!='pretrained':
                 
@@ -55,9 +56,9 @@ class DPAM():
             self.distance = distance
             #distance = loss_sum
         
-        sess = tf.compat.v1.Session()
+        sess = tfcv1.Session()
         #with tf.Session() as sess:
-        loss_saver = tf.train.Saver([var for var in tf.trainable_variables()])
+        loss_saver = tfcv1.train.Saver([var for var in tfcv1.trainable_variables()])
 
         if self.type=='pretrained':
             loss_saver.restore(sess, "%s/loss_model.ckpt" % modfolder)
@@ -96,15 +97,15 @@ class Train_DPAM():
         
         modfolder= self.modfolder
 
-        tf.reset_default_graph()
+        tfcv1.reset_default_graph()
 
-        with tf.variable_scope(tf.get_variable_scope()):
+        with tfcv1.variable_scope(tfcv1.get_variable_scope()):
 
-            input1_wav=tf.placeholder(tf.float32,shape=[None, None, None,1])
+            input1_wav=tfcv1.placeholder(tf.float32, shape=[None, None, None, 1])
             self.input1_wav = input1_wav
-            clean1_wav=tf.placeholder(tf.float32,shape=[None, None, None,1])
+            clean1_wav=tfcv1.placeholder(tf.float32, shape=[None, None, None, 1])
             self.clean1_wav = clean1_wav
-            keep_prob = tf.placeholder_with_default(1.0, shape=())
+            keep_prob = tfcv1.placeholder_with_default(1.0, shape=())
             
             others,loss_sum = featureloss_batch(input1_wav,clean1_wav,keep_prob,loss_layers=SE_LOSS_LAYERS,n_layers=LOSS_LAYERS, norm_type=LOSS_NORM, base_channels=LOSS_BASE_CHANNELS,blk_channels=LOSS_BLK_CHANNELS,ksz=FILTER_SIZE) 
 
@@ -119,31 +120,31 @@ class Train_DPAM():
                 dense3=tf.layers.dense(dist_sigmoid_1,16,activation=tf.nn.relu)
                 dense4=tf.layers.dense(dense3,6,activation=tf.nn.relu)
                 dense2=tf.layers.dense(dense4,2,None)
-                label_task= tf.placeholder(tf.float32,shape=[None,2])
+                label_task= tfcv1.placeholder(tf.float32, shape=[None, 2])
                 net1 = tf.nn.softmax_cross_entropy_with_logits(labels=label_task,logits=dense2)
                 loss_1=tf.reduce_mean(net1)
                 if args.optimiser=='adam':
-                    opt_task = tf.train.AdamOptimizer(learning_rate=args.learning_rate).minimize(loss_1,var_list=[var for var in tf.trainable_variables() if not var.name.startswith("loss_conv")])
+                    opt_task = tf.train.AdamOptimizer(learning_rate=args.learning_rate).minimize(loss_1, var_list=[var for var in tfcv1.trainable_variables() if not var.name.startswith("loss_conv")])
                 elif args.optimiser=='gd':
-                    opt_task = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate).minimize(loss_1,var_list=[var for var in tf.trainable_variables() if not var.name.startswith("loss_conv")])
+                    opt_task = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate).minimize(loss_1, var_list=[var for var in tfcv1.trainable_variables() if not var.name.startswith("loss_conv")])
 
             else:
                 
                 dense3=tf.layers.dense(dist_sigmoid_1,16,activation=tf.nn.relu)
                 dense4=tf.layers.dense(dense3,6,activation=tf.nn.relu)
                 dense2=tf.layers.dense(dense4,2,None)
-                label_task= tf.placeholder(tf.float32,shape=[None,2])
+                label_task= tfcv1.placeholder(tf.float32, shape=[None, 2])
                 net1 = tf.nn.softmax_cross_entropy_with_logits(labels=label_task,logits=dense2)
                 loss_1=tf.reduce_mean(net1)
                 if args.optimiser=='adam':
-                    opt_task = tf.train.AdamOptimizer(learning_rate=args.learning_rate).minimize(loss_1,var_list=[var for var in tf.trainable_variables()])
+                    opt_task = tf.train.AdamOptimizer(learning_rate=args.learning_rate).minimize(loss_1, var_list=[var for var in tfcv1.trainable_variables()])
                 elif args.optimiser=='gd':
-                    opt_task = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate).minimize(loss_1,var_list=[var for var in tf.trainable_variables()])
+                    opt_task = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate).minimize(loss_1, var_list=[var for var in tfcv1.trainable_variables()])
             #distance = loss_sum
         
         sess = tf.compat.v1.Session()
         #with tf.Session() as sess:
-        loss_saver = tf.train.Saver([var for var in tf.trainable_variables()])
+        loss_saver = tfcv1.train.Saver([var for var in tfcv1.trainable_variables()])
 
         if self.type=='pretrained':
             loss_saver.restore(sess, "%s/loss_model.ckpt" % modfolder)
