@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import numpy as np
 import tensorflow as tf
 import tensorflow.compat.v1 as tfcv1
+from tensorflow.python.client import device_lib
 from dpam.network_model import *
 from dpam.helper import *
 import os
@@ -55,9 +56,20 @@ class DPAM():
             distance=res
             self.distance = distance
             #distance = loss_sum
-        
-        sess = tfcv1.Session()
-        #with tf.Session() as sess:
+
+        gpu_options = tfcv1.GPUOptions(allow_growth=True)
+        config = tfcv1.ConfigProto(gpu_options=gpu_options)
+        sess = tfcv1.Session(config=config)
+
+        # Log which devices TF has picked up so GPU use is visible in the job log
+        devices = device_lib.list_local_devices()
+        gpu_devices = [d.name for d in devices if d.device_type == "GPU"]
+        if gpu_devices:
+            print(f"DPAM: TensorFlow GPU(s) available: {', '.join(gpu_devices)}")
+        else:
+            print("DPAM: WARNING — no GPU devices found by TensorFlow; running on CPU.")
+
+        #with tfcv1.Session(config=config) as sess:
         loss_saver = tfcv1.train.Saver([var for var in tfcv1.trainable_variables()])
 
         if self.type=='pretrained':
@@ -141,9 +153,20 @@ class Train_DPAM():
                 elif args.optimiser=='gd':
                     opt_task = tf.train.GradientDescentOptimizer(learning_rate=args.learning_rate).minimize(loss_1, var_list=[var for var in tfcv1.trainable_variables()])
             #distance = loss_sum
-        
-        sess = tf.compat.v1.Session()
-        #with tf.Session() as sess:
+
+        gpu_options = tfcv1.GPUOptions(allow_growth=True)
+        config = tfcv1.ConfigProto(gpu_options=gpu_options)
+        sess = tfcv1.Session(config=config)
+
+        # Log which devices TF has picked up so GPU use is visible in the job log
+        devices = device_lib.list_local_devices()
+        gpu_devices = [d.name for d in devices if d.device_type == "GPU"]
+        if gpu_devices:
+            print(f"DPAM: TensorFlow GPU(s) available: {', '.join(gpu_devices)}")
+        else:
+            print("DPAM: WARNING — no GPU devices found by TensorFlow; running on CPU.")
+
+        #with tfcv1.Session(config=config) as sess:
         loss_saver = tfcv1.train.Saver([var for var in tfcv1.trainable_variables()])
 
         if self.type=='pretrained':
