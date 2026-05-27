@@ -24,7 +24,7 @@ from tqdm import tqdm
 
 import dpam  # available only inside the dpam container
 
-
+SR = 16000
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -36,6 +36,22 @@ def mean_std(arr: np.ndarray):
         return float("nan"), float("nan")
     return float(np.mean(valid)), float(np.std(valid))
 
+# def dpam_align(wav_tensor, original_sr, target_sr=16000):
+#     """
+#     wav_tensor: [1,1,N,1] float32 from load_audio
+#     original_sr: sampling rate of the file
+#     """
+#     # Flatten to 1D signal
+#     x = wav_tensor.reshape(-1)
+
+#     # Resample to target_sr if needed
+#     if original_sr != target_sr:
+#         x = librosa.resample(x, orig_sr=original_sr, target_sr=target_sr)
+
+#     # Back to [1,1,N,1]
+#     x = x.astype(np.float32)
+#     x = x.reshape(1, 1, -1, 1)
+#     return x
 
 def fmt_line(label: str, mean_v: float, std_v: float, width: int) -> str:
     full = f"  {label}"
@@ -111,11 +127,13 @@ if __name__ == "__main__":
 
     for filename in tqdm(df["filename"], desc="DPAM"):
         original_filename = filename.split("_")[0] + ".wav" if "dB" in filename else filename
+        original_filename = filename.replace("_adv", "_nat") if 'adv' in filename else original_filename
 
         original_path   = join(args.original_dir,   original_filename)
         adversarial_path = join(args.adversarial_dir, filename)
 
         wav_original   = dpam.load_audio(original_path)
+        # original_fs = librosa.get_samplerate(original_path)
         wav_adversarial = dpam.load_audio(adversarial_path)
 
         # raw-vs-adv (purifier-independent)
@@ -125,6 +143,7 @@ if __name__ == "__main__":
         for name, pdir in zip(purifier_names, purifier_dirs):
             purified_path = join(str(pdir), filename)
             wav_purified = dpam.load_audio(purified_path)
+            # wav_purified = dpam_align(wav_purified, original_sr=original_fs, target_sr=SR)
 
             dpam_per_purifier[name]["raw-vs-prf"].append(
                 float(loss_fn.forward(wav_original, wav_purified)[0])
